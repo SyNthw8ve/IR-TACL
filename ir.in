@@ -1,4 +1,9 @@
-[fun(fibonacci, [arg(n, int)],
+[var(id(n,var,int), int_literal(26): int),
+fun(sub, [arg(i1, int), arg(i2, int)],
+body([],
+nil,
+minus(id(i1,arg,int): int, id(i2,arg,int): int): int)),
+fun(fibonacci, [arg(n, int)],
 body([
 local(r, int, nil)
 ],
@@ -14,4 +19,17 @@ minus(id(n,arg,int): int, int_literal(1): int): int]): int,
 call(fibonacci, [
 call(sub, [
 id(n,arg,int): int, int_literal(2): int]): int]): int): int)),
-id(r,local,int): int))].
+id(r,local,int): int)),
+fun(main, [],
+body([
+local(fib, int, call(fibonacci, [id(n,var,int): int]): int)
+], [
+print(id(fib,local,int): int),
+print(
+call(fibonacci, [
+plus(int_literal(14): int,
+times(int_literal(3): int,
+int_literal(4): int): int): int]): int),
+print(int_literal(121393): int)
+],
+int_literal(0): int))].

@@ -416,12 +416,13 @@ ir_s_statement(while(Expression, Statement)) :-
                     last_get_next_int_temp(X), ir_cjump(X, [L2, L3]), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
+%REVIEW:check rightness
 ir_s_statement(if(Expression, Statement1, nil)) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression),
                     last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
                     put_label(L1), ir_statement(Statement1), put_label(L2).
 
-
+%REVIEW:check rightness
 ir_s_statement(if(Expression, Statement1, Statement2)) :- 
                     get_labels(3, [L1, L2, L3]), ir_expr(Expression),
                     last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
@@ -471,7 +472,9 @@ ir_return(real) :- tab, write('r_return fp'), last_get_next_real_temp(X), write(
 %ast related
 
 ir_ast_process(var(_, _)).
-ir_ast_process(fun(Identifier, _, Body)) :- write_fun_name(Identifier), ir_process_fun_body(Body).
+ir_ast_process(fun(Identifier, _, Body)) :- 
+                    write_fun_name(Identifier), ir_process_fun_body(Body),
+                    reset_fp, reset_t.
 
 ir_ast_list_process([]).
 ir_ast_list_process([AST|ASTs]) :- ir_ast_process(AST), !, ir_ast_list_process(ASTs).
@@ -479,8 +482,5 @@ ir_ast_list_process([AST|ASTs]) :- ir_ast_process(AST), !, ir_ast_list_process(A
 start(Name) :- readfile(Name, AST_List), ir_ast_list_process(AST_List).
 
 start :- 
-                    retractall(l(_)), retractall(t(_)), 
-                    retractall(fp(_)), assertz(l(0)),
-                    assertz(t(0)), assertz(fp(0)), start('ir.in'),
-                    retractall(t(_)), retractall(fp(_)), retractall(l(_)),
-                    assertz(t(0)), assertz(fp(0)), assertz(l(0)).
+                    reset_t, reset_fp, reset_l, start('ir.in'),
+                    reset_t, reset_fp, reset_l. 
