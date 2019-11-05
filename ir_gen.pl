@@ -416,11 +416,18 @@ ir_s_statement(while(Expression, Statement)) :-
                     last_get_next_int_temp(X), ir_cjump(X, [L2, L3]), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
-ir_s_statement(if(Expression, Statement1, Statement2)) :- 
+ir_s_statement(if(Expression, Statement1, nil)) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression),
                     last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
-                    put_label(L1), ir_statement(Statement1), put_label(L2),
-                    ir_statement(Statement2).
+                    put_label(L1), ir_statement(Statement1), put_label(L2).
+
+
+ir_s_statement(if(Expression, Statement1, Statement2)) :- 
+                    get_labels(3, [L1, L2, L3]), ir_expr(Expression),
+                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
+                    put_label(L1), ir_statement(Statement1),
+                    ir_jump(L3), put_label(L2),
+                    ir_statement(Statement2), put_label(L3).
 
 ir_s_statement(print(Expression:Type)) :- 
                     ir_expr(Expression:Type), save([], Type, Z), 
