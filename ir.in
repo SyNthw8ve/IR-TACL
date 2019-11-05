@@ -1,5 +1,11 @@
 [fun(main, [],
-  body([
-      local(t, bool, not(id(n,var,bool): bool): bool)
-    ], [],
-    nil))].
+body([
+local(z, int, nil)
+], [
+assign(id(x,var,real), real_literal(1.5): real),
+read(id(z,local,int)),
+call(p, [toreal(id(z,local,int): int): real]),
+print(id(x,var,real): real),
+print(true: bool)
+],
+nil))].

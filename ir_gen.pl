@@ -275,7 +275,11 @@ ir_call(int, Id, Args) :-
 ir_call(real, Id, Args) :- 
                     tab, get_next_real_temp(X), write('fp'),
                     write(X), write(' <- r_call @'), write(Id),
-                    write(', ['), write_args(Args), write(']'), nlp.
+                    write(', ['), write_args(Args), write(']'), nl.
+
+ir_call(nil, Id, Args) :-
+                    tab, write('call @'), write(Id),
+                    write(', ['), write_args(Args), write(']'), nl.
 
 %SECTION:logic expressions
 
@@ -401,7 +405,8 @@ ir_s_statement(print(Expression:Type)) :-
 
 ir_s_statement(read(id(Id, Kind, Type))) :- ir_read(Type), ir_store(Id, Type, Kind).
 
-%ir_s_statement(call(Id, Expressions):Type) :- write('call').
+ir_s_statement(call(Id, Expressions)) :- 
+                    process_expressions(Expressions, [], X), ir_call(nil, Id, X).
 
 ir_statement([]).
 ir_statement(S) :- ir_s_statement(S).
