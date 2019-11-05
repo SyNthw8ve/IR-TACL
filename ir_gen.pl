@@ -256,6 +256,18 @@ ir_toreal(X) :-
                     write(Y), write(' <- itor t'),
                     write(X), nl.
 
+%SECTION:copy
+
+ir_copy(int, [T1, T2]) :- 
+                    tab, write('t'), write(T1), 
+                    write(' <- i_copy t'), write(T2),
+                    nl.
+
+ir_copy(real, [F1, F2]) :- 
+                    tab, write('fp'), write(F1),
+                    write(' <- r_copy fp'), write(F2),
+                    nl.
+
 %SECTION:jump
 
 ir_cjump(X, [L1, L2]) :-
@@ -283,8 +295,19 @@ ir_call(nil, Id, Args) :-
 
 %SECTION:logic expressions
 
-%TODO: ir_expr(or(Expression1, Expression2) : bool).
-%TODO: ir_expr(and(Expression1, Expression2) : bool).
+%REVIEW:not complete
+ir_expr(or(Expression1, Expression2) : bool) :- 
+                    get_labels(2, [L1, L2]), ir_expr(Expression1),
+                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]), put_label(L2),
+                    ir_expr(Expression2), last_get_next_int_temp(Y), ir_copy(int, [X, Y]),
+                    put_label(L1), get_next_int_temp(Z), ir_copy(int, [Z, X]).
+     
+%REVIEW:not complete
+ir_expr(and(Expression1, Expression2) : bool) :-
+                    get_labels(2, [L1, L2]), ir_expr(Expression1),
+                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]), put_label(L1),
+                    ir_expr(Expression2), last_get_next_int_temp(Y), ir_copy(int, [X, Y]), 
+                    put_label(L2), get_next_int_temp(Z), ir_copy(int, [Z, X]).
 
 ir_expr(eq(Expression1:Type, Expression2:Type) : bool) :- 
                     ir_expr(Expression1:Type), save([], Type, Z),
@@ -390,14 +413,14 @@ ir_s_statement(assign(id(Id, Kind, Type), Expression)) :-
 
 ir_s_statement(while(Expression, Statement)) :- 
                     get_labels(3, [L1, L2, L3]),  put_label(L1), ir_expr(Expression),
-                    last_get_next_int_temp(X), ir_cjump(Expression, X, [L2, L3]), 
+                    last_get_next_int_temp(X), ir_cjump(X, [L2, L3]), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
-%ir_s_statement(if(Expression, Statement1, Statement2)).
-ir_s_statement(if(Expression, Statement1, nil)) :- 
+ir_s_statement(if(Expression, Statement1, Statement2)) :- 
                     get_labels(2, [L1, L2]), ir_expr(Expression),
-                    last_get_next_int_temp(X), ir_cjump(Expression, X, [L1, L2]),
-                    put_label(L1), ir_statement(Statement1), put_label(L2).
+                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
+                    put_label(L1), ir_statement(Statement1), put_label(L2),
+                    ir_statement(Statement2).
 
 ir_s_statement(print(Expression:Type)) :- 
                     ir_expr(Expression:Type), save([], Type, Z), 
