@@ -1,3 +1,6 @@
+%TODO: Read from stdin, currently reading from file
+%TODO: Parent should inform register
+
 :- dynamic t/1.
 :- dynamic fp/1.
 :- dynamic l/1.
@@ -14,13 +17,11 @@ readfile(Name, X) :-
                     open(Name, read, In), read_term(In, X, []),
                     close(In).
 
-save(X, bool, Z) :- save(X, int, Z).
+save(X, (bool, W), Z) :- save(X, (int, W), Z).
 
-save(X, int, Z) :- 
-                    t(W), Y is W - 1, append(X, [(int, Y)], Z).
 
-save(X, real, Z) :- 
-                    fp(W), Y is W - 1, append(X, [(real, Y)], Z).
+save(X, W, Z) :- 
+                    append(X, [W], Z).
 
 put_label(X) :- write('l'), write(X), write(':'). 
 
@@ -55,203 +56,203 @@ write_args([(Type, Val)|Args]) :-
 
 process_expressions([], X, X).
 process_expressions([Expr:Type|Exprs], X, Z) :- 
-                    ir_expr(Expr:Type), save(X, Type, Y),
+                    ir_expr(Expr:Type, W), save(X, (Type, W), Y),
                     process_expressions(Exprs, Y, Z).
 
 %ir related
 %SECTION:store
 
-ir_store(Id, bool, Kind) :- ir_store(Id, int, Kind).
+ir_store(Id, bool, Kind, X) :- ir_store(Id, int, Kind, X).
 
-ir_store(Id, int, local) :- 
+ir_store(Id, int, local, X) :- 
                     tab, write('@'), write(Id),
-                    write(' <- i_lstore t'), last_get_next_int_temp(X),
+                    write(' <- i_lstore t'),
                     write(X), nl.
 
-ir_store(Id, int, arg) :- 
+ir_store(Id, int, arg, X) :- 
                     tab, write('@'), write(Id),
-                    write(' <- i_astore t'), last_get_next_int_temp(X),
+                    write(' <- i_astore t'),
                     write(X), nl.
 
-ir_store(Id, int, var) :- 
+ir_store(Id, int, var, X) :- 
                     tab, write('@'), write(Id),
-                    write(' <- i_gstore t'), last_get_next_int_temp(X),
+                    write(' <- i_gstore t'),
                     write(X), nl.
 
-ir_store(Id, real, local) :- 
+ir_store(Id, real, local, X) :- 
                     tab, write('@'), write(Id),
-                    write(' <- r_lstore fp'), last_get_next_real_temp(X),
+                    write(' <- r_lstore fp'),
                     write(X), nl.
 
-ir_store(Id, real, arg) :- 
+ir_store(Id, real, arg, X) :- 
                     tab, write('@'), write(Id),
-                    write(' <- r_astore fp'), last_get_next_real_temp(X),
+                    write(' <- r_astore fp'),
                     write(X), nl.
 
-ir_store(Id, real, var) :-
+ir_store(Id, real, var, X) :-
                     tab, write('@'), write(Id),
-                    write(' <- r_gstore fp'), last_get_next_real_temp(X),
+                    write(' <- r_gstore fp'),
                     write(X), nl.
 
 %SECTION:load
 
-ir_load(Id, bool, Kind) :- ir_load(Id, int, Kind).
+ir_load(Id, bool, Kind, X) :- ir_load(Id, int, Kind, X).
 
-ir_load(Id, int, local) :- 
+ir_load(Id, int, local, X) :- 
                     tab, write('t'), get_next_int_temp(X), 
                     write(X), write(' <- i_lload @'), write(Id),
                     nl.
 
-ir_load(Id, int, arg) :- 
+ir_load(Id, int, arg, X) :- 
                     tab, write('t'), get_next_int_temp(X),
                     write(X), write(' <- i_aload @'), write(Id),
                     nl.
 
-ir_load(Id, int, var) :- 
+ir_load(Id, int, var, X) :- 
                     tab, write('t'), get_next_int_temp(X), 
                     write(X), write(' <- i_gload @'), write(Id),
                     nl.
 
-ir_load(Id, real, local) :-
+ir_load(Id, real, local, X) :-
                     tab, write('fp'), get_next_real_temp(X), 
                     write(X), write(' <- r_lload @'), write(Id),
                     nl.
 
-ir_load(Id, real, arg) :-
+ir_load(Id, real, arg, X) :-
                     tab, write('fp'), get_next_real_temp(X), 
                     write(X), write(' <- r_aload @'), write(Id),
                     nl.
 
-ir_load(Id, real, var) :- 
+ir_load(Id, real, var, X) :- 
                     tab, write('fp'), get_next_real_temp(X), 
                     write(X), write(' <- r_gload @'), write(Id),
                     nl.
 
-ir_value(Val, int) :- 
+ir_value(Val, int, X) :- 
                     tab, write('t'), get_next_int_temp(X),
                     write(X), write(' <- i_value '),
                     write(Val), nl.
 
-ir_value(Val, real) :- 
+ir_value(Val, real, X) :- 
                     tab, write('fp'), get_next_real_temp(X),
                     write(X), write(' <- r_value '),
                     write(Val), nl.
 
 %SECTION:arithm
 
-ir_mul(int, [(_,T1), (_,T2)]) :- 
+ir_mul(int, [(_,T1), (_,T2)], X) :- 
                     get_next_int_temp(X), tab, write('t'),
                     write(X), write(' <- i_mul t'),
                     write(T1), write(', t'),
                     write(T2), nl.
 
-ir_mul(real, [(_,F1), (_,F2)]) :-
+ir_mul(real, [(_,F1), (_,F2)], X) :-
                     get_next_real_temp(X), tab, write('fp'), 
                     write(X), write(' <- r_mul fp'),
                     write(F1), write(', fp'),
                     write(F2), nl.
 
-ir_div(int, [(_,T1), (_,T2)]) :-
+ir_div(int, [(_,T1), (_,T2)], X) :-
                     get_next_int_temp(X), tab, write('t'), 
                     write(X),
                     write(' <- i_div t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_div(real, [(_,F1), (_,F2)]) :- 
+ir_div(real, [(_,F1), (_,F2)], X) :- 
                     get_next_real_temp(X), tab, write('fp'),
                     write(X),
                     write(' <- r_div fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_add(int, [(_,T1), (_,T2)]) :- 
+ir_add(int, [(_,T1), (_,T2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_add t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_add(real, [(_,F1), (_,F2)]) :-
+ir_add(real, [(_,F1), (_,F2)], X) :-
                     get_next_real_temp(X), tab, write('fp'), write(X),
                     write(' <- r_add fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_sub(int, [(_,T1), (_,T2)]) :-
+ir_sub(int, [(_,T1), (_,T2)], X) :-
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_sub t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_sub(real, [(_,F1), (_,F2)]) :-
+ir_sub(real, [(_,F1), (_,F2)], X) :-
                     get_next_real_temp(X), tab, write('fp'), write(X),
                     write(' <- r_sub fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_mod(int, [(_,T1), (_,T2)]) :- 
+ir_mod(int, [(_,T1), (_,T2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- mod t'), write(T1),
                     write(', t'), write(T2),
                     nl.
 
-ir_inv(int, [(_,T1)]) :-
+ir_inv(int, [(_,T1)], X) :-
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_inv t'), write(T1), 
                     nl.
 
-ir_inv(real, [(_,F1)]) :- 
+ir_inv(real, [(_,F1)], X) :- 
                     get_next_int_temp(X), tab, write('fp'), write(X),
                     write(' <- r_inv fp'), write(F1), 
                     nl.
 
 %SECTION:logic 
 
-ir_lt(int, [(_,T1), (_,T2)]) :-
+ir_lt(int, [(_,T1), (_,T2)], X) :-
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_lt t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_lt(real, [(_,F1), (_,F2)]) :- 
+ir_lt(real, [(_,F1), (_,F2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_lt fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_gt(Type, [(_,V1), (_,V2)]) :- ir_lt(Type, [(_,V2), (_,V1)]).
+ir_gt(Type, [(_,V1), (_,V2)], X) :- ir_lt(Type, [(_,V2), (_,V1)], X).
 
-ir_eq(int, [(_,T1), (_,T2)]) :- 
+ir_eq(int, [(_,T1), (_,T2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_eq t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_eq(real, [(_,F1), (_,F2)]) :- 
+ir_eq(real, [(_,F1), (_,F2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_eq fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_ne(int, [(_,T1), (_,T2)]) :- 
+ir_ne(int, [(_,T1), (_,T2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_ne t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_ne(real, [(_,F1), (_,F2)]) :- 
+ir_ne(real, [(_,F1), (_,F2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_ne fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_le(int, [(_,T1), (_,T2)]) :- 
+ir_le(int, [(_,T1), (_,T2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_le t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_le(real, [(_,F1), (_,F2)]) :- 
+ir_le(real, [(_,F1), (_,F2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_le fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_ge(Type, [(_,V1), (_,V2)]) :- ir_le(Type, [(_,V2), (_,V1)]).
+ir_ge(Type, [(_,V1), (_,V2)], X) :- ir_le(Type, [(_,V2), (_,V1)], X).
 
-ir_not(bool, [(_,T1)]) :- 
+ir_not(bool, [(_,T1)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_not t'), write(T1), nl.
 
 %SECTION:coersion
 
-ir_toreal(X) :- 
+ir_toreal(X, Y) :- 
                     tab, write('fp'), get_next_real_temp(Y),
                     write(Y), write(' <- itor t'),
                     write(X), nl.
@@ -279,12 +280,12 @@ ir_jump(L) :- tab, write('jump l'), write(L), nl.
 
 %SECTION:calls
 
-ir_call(int, Id, Args) :- 
+ir_call(int, Id, Args, X) :- 
                     tab, get_next_int_temp(X), write('t'), 
                     write(X), write(' <- i_call @'), write(Id),
                     write(', ['), write_args(Args), write(']'), nl.
 
-ir_call(real, Id, Args) :- 
+ir_call(real, Id, Args, X) :- 
                     tab, get_next_real_temp(X), write('fp'),
                     write(X), write(' <- r_call @'), write(Id),
                     write(', ['), write_args(Args), write(']'), nl.
@@ -296,89 +297,89 @@ ir_call(nil, Id, Args) :-
 %SECTION:logic expressions
 
 %REVIEW:not complete
-ir_expr(or(Expression1, Expression2) : bool) :- 
-                    get_labels(2, [L1, L2]), ir_expr(Expression1),
-                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]), put_label(L2),
-                    ir_expr(Expression2), last_get_next_int_temp(Y), ir_copy(int, [X, Y]),
-                    put_label(L1), get_next_int_temp(Z), ir_copy(int, [Z, X]).
+ir_expr(or(Expression1, Expression2) : bool, X) :- 
+                    get_labels(2, [L1, L2]), ir_expr(Expression1, X),
+                    ir_cjump(X, [L1, L2]), put_label(L2),
+                    ir_expr(Expression2, Y), ir_copy(int, [X, Y]),
+                    put_label(L1).
      
 %REVIEW:not complete
-ir_expr(and(Expression1, Expression2) : bool) :-
-                    get_labels(2, [L1, L2]), ir_expr(Expression1),
-                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]), put_label(L1),
-                    ir_expr(Expression2), last_get_next_int_temp(Y), ir_copy(int, [X, Y]), 
-                    put_label(L2), get_next_int_temp(Z), ir_copy(int, [Z, X]).
+ir_expr(and(Expression1, Expression2) : bool, X) :-
+                    get_labels(2, [L1, L2]), ir_expr(Expression1, X),
+                    ir_cjump(X, [L1, L2]), put_label(L1),
+                    ir_expr(Expression2, Y), ir_copy(int, [X, Y]), 
+                    put_label(L2).
 
-ir_expr(eq(Expression1:Type, Expression2:Type) : bool) :- 
-                    ir_expr(Expression1:Type), save([], Type, Z),
-                    ir_expr(Expression2:Type), save(Z, Type, W), ir_eq(Type, W).
+ir_expr(eq(Expression1:Type, Expression2:Type) : bool, Z) :- 
+                    ir_expr(Expression1:Type, X),
+                    ir_expr(Expression2:Type, Y), ir_eq(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(ne(Expression1:Type, Expression2:Type) : bool) :- 
-                    ir_expr(Expression1:Type), save([], Type, Z), 
-                    ir_expr(Expression2:Type), save(Z, Type, W), ir_ne(Type, W).
+ir_expr(ne(Expression1:Type, Expression2:Type) : bool, Z) :- 
+                    ir_expr(Expression1:Type, X), 
+                    ir_expr(Expression2:Type, Y), ir_ne(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(lt(Expression1:Type, Expression2:Type) : bool) :- 
-                    ir_expr(Expression1:Type), save([], Type, Z),
-                    ir_expr(Expression2:Type), save(Z, Type, W), ir_lt(Type, W).
+ir_expr(lt(Expression1:Type, Expression2:Type) : bool, Z) :- 
+                    ir_expr(Expression1:Type, X),
+                    ir_expr(Expression2:Type, Y), ir_lt(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(le(Expression1, Expression2) : bool) :- 
-                    ir_expr(Expression1:Type), save([], Type, Z),
-                    ir_expr(Expression2:Type), save(Z, Type, W), ir_le(Type, W).
+ir_expr(le(Expression1, Expression2) : bool, Z) :- 
+                    ir_expr(Expression1:Type, X),
+                    ir_expr(Expression2:Type, Y), ir_le(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(gt(Expression1:Type, Expression2:Type) : bool) :-
-                    ir_expr(Expression1:Type), save([], Type, Z),
-                    ir_expr(Expression2:Type), save(Z, Type, W), ir_gt(Type, W).
+ir_expr(gt(Expression1:Type, Expression2:Type) : bool, Z) :-
+                    ir_expr(Expression1:Type, X), 
+                    ir_expr(Expression2:Type, Y), ir_gt(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(ge(Expression1:Type, Expression2:Type) : bool) :- 
-                    ir_expr(Expression1:Type), save([], Type, Z),
-                    ir_expr(Expression2:Type), save(Z, Type, W), ir_ge(Type, W).
+ir_expr(ge(Expression1:Type, Expression2:Type) : bool, Z) :- 
+                    ir_expr(Expression1:Type, X),
+                    ir_expr(Expression2:Type, Y), ir_ge(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(not(Expression1:Type) : bool) :- 
-                    ir_expr(Expression1:Type), save([], Type, Z), ir_not(Type, Z).
+ir_expr(not(Expression1:Type) : bool, Z) :- 
+                    ir_expr(Expression1:Type, X), ir_not(Type, [(Type, X)], Z).
 
 %SECTION:arithm expressions
 
-ir_expr(plus(Expression1, Expression2) : Type) :- 
-                    ir_expr(Expression1), save([], Type, Z),
-                    ir_expr(Expression2), save(Z, Type, W), ir_add(Type, W).
+ir_expr(plus(Expression1, Expression2) : Type, Z) :- 
+                    ir_expr(Expression1, X),
+                    ir_expr(Expression2, Y), ir_add(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(minus(Expression1, Expression2) : Type):- 
-                    ir_expr(Expression1), save([], Type, Z),
-                    ir_expr(Expression2), save(Z, Type, W), ir_sub(Type, W).
+ir_expr(minus(Expression1, Expression2) : Type, Z):- 
+                    ir_expr(Expression1, X),
+                    ir_expr(Expression2, Y), ir_sub(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(times(Expression1, Expression2):Type) :- 
-                    ir_expr(Expression1), save([], Type, Z),
-                    ir_expr(Expression2), save(Z, Type, W),  ir_mul(Type, W).
+ir_expr(times(Expression1, Expression2):Type, Z) :- 
+                    ir_expr(Expression1, X),
+                    ir_expr(Expression2, Y), ir_mul(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(div(Expression1, Expression2) : Type) :- 
-                    ir_expr(Expression1), save([], Type, Z),
-                    ir_expr(Expression2), save(Z, Type, W), ir_div(Type, W).
+ir_expr(div(Expression1, Expression2) : Type, Z) :- 
+                    ir_expr(Expression1, X),
+                    ir_expr(Expression2, Y), ir_div(Type, [(Type, X), (Type, Y)], Z).
 
-ir_expr(mod(Expression1, Expression2) : int) :- 
-                    ir_expr(Expression1), save([], Type, Z),
-                    ir_expr(Expression2), save(Z, Type, W), ir_mod(int, W).
+ir_expr(mod(Expression1, Expression2) : int, Z) :- 
+                    ir_expr(Expression1, X),
+                    ir_expr(Expression2, Y), ir_mod(int, [(int, X), (int, Y)], Z).
 
-ir_expr(inv(Expression1) : Type) :- 
-                    ir_expr(Expression1), save([], Type, Z),
-                    ir_inv(Type, Z).
+ir_expr(inv(Expression1) : Type, Z) :- 
+                    ir_expr(Expression1, X),
+                    ir_inv(Type, [(Type, X)], Z).
 
 %atomic 
 
-ir_expr(int_literal(Val): int) :- ir_value(Val, int).
-ir_expr(real_literal(Val): real) :- ir_value(Val, real).
+ir_expr(int_literal(Val): int, X) :- ir_value(Val, int, X).
+ir_expr(real_literal(Val): real, X) :- ir_value(Val, real, X).
 
-ir_expr(true : bool) :- ir_value(1, int).
-ir_expr(false : bool) :- ir_value(0, int).
+ir_expr(true : bool, X) :- ir_value(1, int, X).
+ir_expr(false : bool, X) :- ir_value(0, int, X).
 
-ir_expr(id(Id, Kind, Type): Type) :- ir_load(Id, Type, Kind).
+ir_expr(id(Id, Kind, Type): Type, X) :- ir_load(Id, Type, Kind, X).
 
-ir_expr(toreal(Expression) : real) :- 
-                    ir_expr(Expression), last_get_next_int_temp(X),
-                    ir_toreal(X).
+ir_expr(toreal(Expression) : real, Y) :- 
+                    ir_expr(Expression, X),
+                    ir_toreal(X, Y).
 
-ir_expr(call(Id, Expressions):Type) :- 
+ir_expr(call(Id, Expressions):Type, Z) :- 
                     process_expressions(Expressions, [], X),
-                    ir_call(Type, Id, X).
+                    ir_call(Type, Id, X, Z).
 
 %SECTION:io procedures
 
@@ -394,47 +395,47 @@ ir_print(real, [(_,F1)]) :-
                     tab, write('r_print fp'),
                     write(F1), nl.
 
-ir_read(bool) :- 
+ir_read(bool, X) :- 
                     tab, get_next_int_temp(X), write('t'),
                     write(X), write(' <- b_read'), nl.
 
-ir_read(int) :- 
+ir_read(int, X) :- 
                     tab, get_next_int_temp(X), write('t'),
                     write(X), write(' <- i_read'), nl.
 
-ir_read(real) :- 
+ir_read(real, X) :- 
                     tab, get_next_real_temp(X), write('fp'),
                     write(X), write(' <- r_read'), nl.
 
 %statements 
 
 ir_s_statement(assign(id(Id, Kind, Type), Expression)) :- 
-                    ir_expr(Expression), ir_store(Id, Type, Kind).
+                    ir_expr(Expression, X), ir_store(Id, Type, Kind, X).
 
 ir_s_statement(while(Expression, Statement)) :- 
-                    get_labels(3, [L1, L2, L3]),  put_label(L1), ir_expr(Expression),
-                    last_get_next_int_temp(X), ir_cjump(X, [L2, L3]), 
+                    get_labels(3, [L1, L2, L3]),  put_label(L1), ir_expr(Expression, X),
+                    ir_cjump(X, [L2, L3]), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
 %REVIEW:check rightness
 ir_s_statement(if(Expression, Statement1, nil)) :-
-                    get_labels(2, [L1, L2]), ir_expr(Expression),
-                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
+                    get_labels(2, [L1, L2]), ir_expr(Expression, X),
+                    ir_cjump(X, [L1, L2]),
                     put_label(L1), ir_statement(Statement1), put_label(L2).
 
 %REVIEW:check rightness
 ir_s_statement(if(Expression, Statement1, Statement2)) :- 
-                    get_labels(3, [L1, L2, L3]), ir_expr(Expression),
-                    last_get_next_int_temp(X), ir_cjump(X, [L1, L2]),
+                    get_labels(3, [L1, L2, L3]), ir_expr(Expression, X),
+                    ir_cjump(X, [L1, L2]),
                     put_label(L1), ir_statement(Statement1),
                     ir_jump(L3), put_label(L2),
                     ir_statement(Statement2), put_label(L3).
 
 ir_s_statement(print(Expression:Type)) :- 
-                    ir_expr(Expression:Type), save([], Type, Z), 
-                    ir_print(Type, Z). 
+                    ir_expr(Expression:Type, X), 
+                    ir_print(Type, [(Type, X)]). 
 
-ir_s_statement(read(id(Id, Kind, Type))) :- ir_read(Type), ir_store(Id, Type, Kind).
+ir_s_statement(read(id(Id, Kind, Type))) :- ir_read(Type, X), ir_store(Id, Type, Kind, X).
 
 ir_s_statement(call(Id, Expressions)) :- 
                     process_expressions(Expressions, [], X), ir_call(nil, Id, X).
@@ -443,7 +444,7 @@ ir_statement([]).
 ir_statement(S) :- ir_s_statement(S).
 ir_statement([S|Ss]) :- ir_s_statement(S), ir_statement(Ss).
 
-%function related
+%SECTION:function related
 
 write_fun_name(Id) :- write('function @'), write(Id), nl.
 
@@ -458,18 +459,18 @@ ir_process_declarations([]).
 ir_process_declarations([D|Ds]) :- ir_declaration(D), ir_process_declarations(Ds).
 
 ir_declaration(local(_, _, nil)).
-ir_declaration(local(Id, Type, Expression)) :- ir_expr(Expression), ir_store(Id, Type, local).
+ir_declaration(local(Id, Type, Expression)) :- ir_expr(Expression, X), ir_store(Id, Type, local, X).
 
 ir_process_statement(Statement) :- ir_statement(Statement).
 
 ir_process_ret_expression(nil) :- ir_return(nil).
-ir_process_ret_expression(Expression:Type) :- ir_expr(Expression:Type), ir_return(Type).
+ir_process_ret_expression(Expression:Type) :- ir_expr(Expression:Type, X), ir_return(Type, X).
 
 ir_return(nil) :- tab, write('return'), nl.
-ir_return(int) :- tab, write('i_return t'), last_get_next_int_temp(X), write(X), nl.
-ir_return(real) :- tab, write('r_return fp'), last_get_next_real_temp(X), write(X), nl.
+ir_return(int, X) :- tab, write('i_return t'), write(X), nl.
+ir_return(real, X) :- tab, write('r_return fp'), write(X), nl.
 
-%ast related
+%SECTION:ast related
 
 ir_ast_process(var(_, _)).
 ir_ast_process(fun(Identifier, _, Body)) :- 
