@@ -1,5 +1,4 @@
 %TODO: Read from stdin, currently reading from file
-%TODO: Parent should inform register
 
 :- dynamic t/1.
 :- dynamic fp/1.
@@ -11,17 +10,11 @@ l(0).
 
 %SECTION:helpers
 
-tab :- tab(4).
+tab :- write('\t').
 
 readfile(Name, X) :-
                     open(Name, read, In), read_term(In, X, []),
                     close(In).
-
-save(X, (bool, W), Z) :- save(X, (int, W), Z).
-
-
-save(X, W, Z) :- 
-                    append(X, [W], Z).
 
 put_label(X) :- write('l'), write(X), write(':'). 
 
@@ -45,6 +38,7 @@ reset_t :- retractall(t(_)), assertz(t(0)).
 reset_fp :- retractall(fp(_)), assertz(fp(0)).
 reset_l :- retractall(l(_)), assertz(l(0)).
 
+write_arg(bool, Val) :- write_arg(int, Val).
 write_arg(int, Val) :- write('t'), write(Val).
 write_arg(real, Val) :- write('fp'), write(Val).
 
@@ -54,10 +48,9 @@ write_args([(Type, Val)|Args]) :-
                     write_arg(Type, Val), write(','),
                     write_args(Args).
 
-process_expressions([], X, X).
-process_expressions([Expr:Type|Exprs], X, Z) :- 
-                    ir_expr(Expr:Type, W), save(X, (Type, W), Y),
-                    process_expressions(Exprs, Y, Z).
+process_expressions([], []).
+process_expressions([Expr:Type|Exprs], [(Type, W)|X]) :-
+                    ir_expr(Expr:Type, W), process_expressions(Exprs, X).
 
 %ir related
 %SECTION:store
@@ -241,7 +234,7 @@ ir_le(int, [(_,T1), (_,T2)], X) :-
 
 ir_le(real, [(_,F1), (_,F2)], X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
-                    write(' <- i_le fp'), write(F1),
+                    write(' <- r_le fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
 ir_ge(Type, [(_,V1), (_,V2)], X) :- ir_le(Type, [(_,V2), (_,V1)], X).
@@ -280,6 +273,9 @@ ir_jump(L) :- tab, write('jump l'), write(L), nl.
 
 %SECTION:calls
 
+
+ir_call(bool, Id, Args, X) :- ir_call(int, Id, Args, X).
+
 ir_call(int, Id, Args, X) :- 
                     tab, get_next_int_temp(X), write('t'), 
                     write(X), write(' <- i_call @'), write(Id),
@@ -296,14 +292,12 @@ ir_call(nil, Id, Args) :-
 
 %SECTION:logic expressions
 
-%REVIEW:not complete
 ir_expr(or(Expression1, Expression2) : bool, X) :- 
                     get_labels(2, [L1, L2]), ir_expr(Expression1, X),
                     ir_cjump(X, [L1, L2]), put_label(L2),
                     ir_expr(Expression2, Y), ir_copy(int, [X, Y]),
                     put_label(L1).
      
-%REVIEW:not complete
 ir_expr(and(Expression1, Expression2) : bool, X) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression1, X),
                     ir_cjump(X, [L1, L2]), put_label(L1),
@@ -378,7 +372,7 @@ ir_expr(toreal(Expression) : real, Y) :-
                     ir_toreal(X, Y).
 
 ir_expr(call(Id, Expressions):Type, Z) :- 
-                    process_expressions(Expressions, [], X),
+                    process_expressions(Expressions, X),
                     ir_call(Type, Id, X, Z).
 
 %SECTION:io procedures
@@ -417,13 +411,13 @@ ir_s_statement(while(Expression, Statement)) :-
                     ir_cjump(X, [L2, L3]), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
-%REVIEW:check rightness
+%DONE:check rightness
 ir_s_statement(if(Expression, Statement1, nil)) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression, X),
                     ir_cjump(X, [L1, L2]),
                     put_label(L1), ir_statement(Statement1), put_label(L2).
 
-%REVIEW:check rightness
+%DONE:check rightness
 ir_s_statement(if(Expression, Statement1, Statement2)) :- 
                     get_labels(3, [L1, L2, L3]), ir_expr(Expression, X),
                     ir_cjump(X, [L1, L2]),
@@ -438,7 +432,7 @@ ir_s_statement(print(Expression:Type)) :-
 ir_s_statement(read(id(Id, Kind, Type))) :- ir_read(Type, X), ir_store(Id, Type, Kind, X).
 
 ir_s_statement(call(Id, Expressions)) :- 
-                    process_expressions(Expressions, [], X), ir_call(nil, Id, X).
+                    process_expressions(Expressions, X), ir_call(nil, Id, X).
 
 ir_statement([]).
 ir_statement(S) :- ir_s_statement(S).
@@ -467,6 +461,8 @@ ir_process_ret_expression(nil) :- ir_return(nil).
 ir_process_ret_expression(Expression:Type) :- ir_expr(Expression:Type, X), ir_return(Type, X).
 
 ir_return(nil) :- tab, write('return'), nl.
+
+ir_return(bool, X) :- ir_return(int, X).
 ir_return(int, X) :- tab, write('i_return t'), write(X), nl.
 ir_return(real, X) :- tab, write('r_return fp'), write(X), nl.
 
