@@ -12,9 +12,8 @@ l(0).
 
 tab :- write('\t').
 
-readfile(Name, X) :-
-                    open(Name, read, In), read_term(In, X, []),
-                    close(In).
+readfile(In, X) :-
+                    read(In, X).
 
 put_label(X) :- write('l'), write(X), write(':'). 
 
@@ -30,9 +29,6 @@ increment_l :- l(X), Y is X + 1, asserta(l(Y)).
 get_next_int_temp(X) :- t(X), increment_t.
 get_next_real_temp(X) :- fp(X), increment_fp.
 get_next_label(X) :- l(X), increment_l.
-
-last_get_next_int_temp(X) :- t(Y), X is Y - 1.
-last_get_next_real_temp(X) :- fp(Y), X is Y - 1.
 
 reset_t :- retractall(t(_)), assertz(t(0)).
 reset_fp :- retractall(fp(_)), assertz(fp(0)).
@@ -411,13 +407,11 @@ ir_s_statement(while(Expression, Statement)) :-
                     ir_cjump(X, [L2, L3]), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
-%DONE:check rightness
 ir_s_statement(if(Expression, Statement1, nil)) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression, X),
                     ir_cjump(X, [L1, L2]),
                     put_label(L1), ir_statement(Statement1), put_label(L2).
 
-%DONE:check rightness
 ir_s_statement(if(Expression, Statement1, Statement2)) :- 
                     get_labels(3, [L1, L2, L3]), ir_expr(Expression, X),
                     ir_cjump(X, [L1, L2]),
@@ -476,8 +470,7 @@ ir_ast_process(fun(Identifier, _, Body)) :-
 ir_ast_list_process([]).
 ir_ast_list_process([AST|ASTs]) :- ir_ast_process(AST), !, ir_ast_list_process(ASTs).
 
-start(Name) :- readfile(Name, AST_List), ir_ast_list_process(AST_List).
+loop(In, end_of_file) :- close(In), reset_t, reset_fp, reset_l.
+loop(In, AST_List) :- ir_ast_process(AST_List), readfile(In, AST_List2), loop(In, AST_List2).
 
-start :- 
-                    reset_t, reset_fp, reset_l, start('ir.in'),
-                    reset_t, reset_fp, reset_l. 
+start(Name) :- reset_t, reset_fp, reset_l, open(Name, read, In), readfile(In, AST_List), loop(In, AST_List), !.

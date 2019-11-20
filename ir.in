@@ -1,4 +1,4 @@
-[fun(isEven, [arg(n, int)],
+fun(isEven, [arg(n, int)],
   body([
       local(ret, bool, false: bool)
     ], 
@@ -6,7 +6,7 @@
       eq(mod(id(n,arg,int): int, int_literal(2): int): int, int_literal(0): int): bool, 
       assign(id(ret,local,bool), true: bool), 
       nil),
-    id(ret,local,bool): bool)),
+    id(ret,local,bool): bool)).
 
 fun(isLeapYear, [arg(y, int)],
   body([
@@ -17,8 +17,8 @@ fun(isLeapYear, [arg(y, int)],
       if(
         eq(mod(id(y,arg,int): int, int_literal(100): int): int, int_literal(0): int): bool, 
         assign(id(ret,local,bool), eq(mod(id(y,arg,int): int, int_literal(400): int): int, int_literal(0): int): bool), 
-        assign(id(ret,local,bool), true: bool)), []),
-    id(ret,local,bool): bool)),
+        assign(id(ret,local,bool), true: bool)), nil),
+    id(ret,local,bool): bool)).
 
 fun(main, [],
   body([], [
@@ -27,4 +27,4 @@ fun(main, [],
       print(call(isEven, [int_literal(5): int]): bool),
       print(call(isEven, [int_literal(4): int]): bool)
     ],
-    nil))].
+    nil)).
