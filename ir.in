@@ -1,30 +1,9 @@
-fun(isEven, [arg(n, int)],
+fun(hi, [arg(n, int)],
   body([
-      local(ret, bool, false: bool)
+      local(r, bool, true: bool)
     ], 
     if(
-      eq(mod(id(n,arg,int): int, int_literal(2): int): int, int_literal(0): int): bool, 
-      assign(id(ret,local,bool), true: bool), 
+      or(lt(id(n,arg,int): int, int_literal(0): int): bool, gt(id(n,arg,int): int, int_literal(0): int): bool): bool, 
+      assign(id(r,local,bool), false: bool), 
       nil),
-    id(ret,local,bool): bool)).
-
-fun(isLeapYear, [arg(y, int)],
-  body([
-      local(ret, bool, false: bool)
-    ], 
-    if(
-      eq(mod(id(y,arg,int): int, int_literal(4): int): int, int_literal(0): int): bool, 
-      if(
-        eq(mod(id(y,arg,int): int, int_literal(100): int): int, int_literal(0): int): bool, 
-        assign(id(ret,local,bool), eq(mod(id(y,arg,int): int, int_literal(400): int): int, int_literal(0): int): bool), 
-        assign(id(ret,local,bool), true: bool)), nil),
-    id(ret,local,bool): bool)).
-
-fun(main, [],
-  body([], [
-      print(call(isLeapYear, [int_literal(1990): int]): bool),
-      print(call(isLeapYear, [int_literal(400): int]): bool),
-      print(call(isEven, [int_literal(5): int]): bool),
-      print(call(isEven, [int_literal(4): int]): bool)
-    ],
-    nil)).
+    id(r,local,bool): bool)).

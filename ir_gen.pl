@@ -1,8 +1,8 @@
-%TODO: Read from stdin, currently reading from file
-
 :- dynamic t/1.
 :- dynamic fp/1.
 :- dynamic l/1.
+
+%TODO: Remove unecessary things
 
 t(0).
 fp(0).
@@ -129,113 +129,113 @@ ir_value(Val, real, X) :-
 
 %SECTION:arithm
 
-ir_mul(int, [(_,T1), (_,T2)], X) :- 
+ir_mul(int, T1, T2, X) :- 
                     get_next_int_temp(X), tab, write('t'),
                     write(X), write(' <- i_mul t'),
                     write(T1), write(', t'),
                     write(T2), nl.
 
-ir_mul(real, [(_,F1), (_,F2)], X) :-
+ir_mul(real, F1, F2, X) :-
                     get_next_real_temp(X), tab, write('fp'), 
                     write(X), write(' <- r_mul fp'),
                     write(F1), write(', fp'),
                     write(F2), nl.
 
-ir_div(int, [(_,T1), (_,T2)], X) :-
+ir_div(int, T1, T2, X) :-
                     get_next_int_temp(X), tab, write('t'), 
                     write(X),
                     write(' <- i_div t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_div(real, [(_,F1), (_,F2)], X) :- 
+ir_div(real, F1, F2, X) :- 
                     get_next_real_temp(X), tab, write('fp'),
                     write(X),
                     write(' <- r_div fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_add(int, [(_,T1), (_,T2)], X) :- 
+ir_add(int, T1, T2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_add t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_add(real, [(_,F1), (_,F2)], X) :-
+ir_add(real, F1, F2, X) :-
                     get_next_real_temp(X), tab, write('fp'), write(X),
                     write(' <- r_add fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_sub(int, [(_,T1), (_,T2)], X) :-
+ir_sub(int, T1, T2, X) :-
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_sub t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_sub(real, [(_,F1), (_,F2)], X) :-
+ir_sub(real, F1, F2, X) :-
                     get_next_real_temp(X), tab, write('fp'), write(X),
                     write(' <- r_sub fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_mod(int, [(_,T1), (_,T2)], X) :- 
+ir_mod(int, T1, T2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- mod t'), write(T1),
                     write(', t'), write(T2),
                     nl.
 
-ir_inv(int, [(_,T1)], X) :-
+ir_inv(int, T1, X) :-
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_inv t'), write(T1), 
                     nl.
 
-ir_inv(real, [(_,F1)], X) :- 
+ir_inv(real, F1, X) :- 
                     get_next_int_temp(X), tab, write('fp'), write(X),
                     write(' <- r_inv fp'), write(F1), 
                     nl.
 
 %SECTION:logic 
 
-ir_lt(int, [(_,T1), (_,T2)], X) :-
+ir_lt(int, T1, T2, X) :-
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_lt t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_lt(real, [(_,F1), (_,F2)], X) :- 
+ir_lt(real, F1, F2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_lt fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_gt(Type, [(_,V1), (_,V2)], X) :- ir_lt(Type, [(_,V2), (_,V1)], X).
+ir_gt(Type, V1, V2, X) :- ir_lt(Type, V2, V1, X).
 
-ir_eq(int, [(_,T1), (_,T2)], X) :- 
+ir_eq(int, T1, T2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_eq t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_eq(real, [(_,F1), (_,F2)], X) :- 
+ir_eq(real, F1, F2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_eq fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_ne(int, [(_,T1), (_,T2)], X) :- 
+ir_ne(int, T1, T2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_ne t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_ne(real, [(_,F1), (_,F2)], X) :- 
+ir_ne(real, F1, F2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_ne fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_le(int, [(_,T1), (_,T2)], X) :- 
+ir_le(int, T1, T2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_le t'), write(T1),
                     write(', t'), write(T2), nl.
 
-ir_le(real, [(_,F1), (_,F2)], X) :- 
+ir_le(real, F1, F2, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- r_le fp'), write(F1),
                     write(', fp'), write(F2), nl.
 
-ir_ge(Type, [(_,V1), (_,V2)], X) :- ir_le(Type, [(_,V2), (_,V1)], X).
+ir_ge(Type, V1, V2, X) :- ir_le(Type, V2, V1, X).
 
-ir_not(bool, [(_,T1)], X) :- 
+ir_not(bool, T1, X) :- 
                     get_next_int_temp(X), tab, write('t'), write(X),
                     write(' <- i_not t'), write(T1), nl.
 
@@ -248,19 +248,19 @@ ir_toreal(X, Y) :-
 
 %SECTION:copy
 
-ir_copy(int, [T1, T2]) :- 
+ir_copy(int, T1, T2) :- 
                     tab, write('t'), write(T1), 
                     write(' <- i_copy t'), write(T2),
                     nl.
 
-ir_copy(real, [F1, F2]) :- 
+ir_copy(real, F1, F2) :- 
                     tab, write('fp'), write(F1),
                     write(' <- r_copy fp'), write(F2),
                     nl.
 
 %SECTION:jump
 
-ir_cjump(X, [L1, L2]) :-
+ir_cjump(X, L1, L2) :-
                     tab, write('cjump t'), write(X),
                     write(', l'), write(L1), write(' ,l'),
                     write(L2), nl.
@@ -290,68 +290,68 @@ ir_call(nil, Id, Args) :-
 
 ir_expr(or(Expression1, Expression2) : bool, X) :- 
                     get_labels(2, [L1, L2]), ir_expr(Expression1, X),
-                    ir_cjump(X, [L1, L2]), put_label(L2),
-                    ir_expr(Expression2, Y), ir_copy(int, [X, Y]),
+                    ir_cjump(X, L1, L2), put_label(L2),
+                    ir_expr(Expression2, Y), ir_copy(int, X, Y),
                     put_label(L1).
      
 ir_expr(and(Expression1, Expression2) : bool, X) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression1, X),
-                    ir_cjump(X, [L1, L2]), put_label(L1),
-                    ir_expr(Expression2, Y), ir_copy(int, [X, Y]), 
+                    ir_cjump(X, L1, L2), put_label(L1),
+                    ir_expr(Expression2, Y), ir_copy(int, X, Y), 
                     put_label(L2).
 
 ir_expr(eq(Expression1:Type, Expression2:Type) : bool, Z) :- 
                     ir_expr(Expression1:Type, X),
-                    ir_expr(Expression2:Type, Y), ir_eq(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2:Type, Y), ir_eq(Type, X, Y, Z).
 
 ir_expr(ne(Expression1:Type, Expression2:Type) : bool, Z) :- 
                     ir_expr(Expression1:Type, X), 
-                    ir_expr(Expression2:Type, Y), ir_ne(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2:Type, Y), ir_ne(Type, X, Y, Z).
 
 ir_expr(lt(Expression1:Type, Expression2:Type) : bool, Z) :- 
                     ir_expr(Expression1:Type, X),
-                    ir_expr(Expression2:Type, Y), ir_lt(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2:Type, Y), ir_lt(Type, X, Y, Z).
 
 ir_expr(le(Expression1, Expression2) : bool, Z) :- 
                     ir_expr(Expression1:Type, X),
-                    ir_expr(Expression2:Type, Y), ir_le(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2:Type, Y), ir_le(Type, X, Y, Z).
 
 ir_expr(gt(Expression1:Type, Expression2:Type) : bool, Z) :-
                     ir_expr(Expression1:Type, X), 
-                    ir_expr(Expression2:Type, Y), ir_gt(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2:Type, Y), ir_gt(Type, X, Y, Z).
 
 ir_expr(ge(Expression1:Type, Expression2:Type) : bool, Z) :- 
                     ir_expr(Expression1:Type, X),
-                    ir_expr(Expression2:Type, Y), ir_ge(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2:Type, Y), ir_ge(Type, X, Y, Z).
 
 ir_expr(not(Expression1:Type) : bool, Z) :- 
-                    ir_expr(Expression1:Type, X), ir_not(Type, [(Type, X)], Z).
+                    ir_expr(Expression1:Type, X), ir_not(Type, X, Z).
 
 %SECTION:arithm expressions
 
 ir_expr(plus(Expression1, Expression2) : Type, Z) :- 
                     ir_expr(Expression1, X),
-                    ir_expr(Expression2, Y), ir_add(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2, Y), ir_add(Type, X, Y, Z).
 
 ir_expr(minus(Expression1, Expression2) : Type, Z):- 
                     ir_expr(Expression1, X),
-                    ir_expr(Expression2, Y), ir_sub(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2, Y), ir_sub(Type, X, Y, Z).
 
 ir_expr(times(Expression1, Expression2):Type, Z) :- 
                     ir_expr(Expression1, X),
-                    ir_expr(Expression2, Y), ir_mul(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2, Y), ir_mul(Type, X, Y, Z).
 
 ir_expr(div(Expression1, Expression2) : Type, Z) :- 
                     ir_expr(Expression1, X),
-                    ir_expr(Expression2, Y), ir_div(Type, [(Type, X), (Type, Y)], Z).
+                    ir_expr(Expression2, Y), ir_div(Type, X, Y, Z).
 
 ir_expr(mod(Expression1, Expression2) : int, Z) :- 
                     ir_expr(Expression1, X),
-                    ir_expr(Expression2, Y), ir_mod(int, [(int, X), (int, Y)], Z).
+                    ir_expr(Expression2, Y), ir_mod(int, X, Y, Z).
 
 ir_expr(inv(Expression1) : Type, Z) :- 
                     ir_expr(Expression1, X),
-                    ir_inv(Type, [(Type, X)], Z).
+                    ir_inv(Type, X, Z).
 
 %atomic 
 
@@ -373,15 +373,15 @@ ir_expr(call(Id, Expressions):Type, Z) :-
 
 %SECTION:io procedures
 
-ir_print(bool, [(_,B1)]) :- 
+ir_print(bool, B1) :- 
                     tab, write('b_print t'),
                     write(B1), nl. 
 
-ir_print(int, [(_,T1)]) :- 
+ir_print(int, T1) :- 
                     tab, write('i_print t'),
                     write(T1), nl.
 
-ir_print(real, [(_,F1)]) :-
+ir_print(real, F1) :-
                     tab, write('r_print fp'),
                     write(F1), nl.
 
@@ -404,24 +404,24 @@ ir_s_statement(assign(id(Id, Kind, Type), Expression)) :-
 
 ir_s_statement(while(Expression, Statement)) :- 
                     get_labels(3, [L1, L2, L3]),  put_label(L1), ir_expr(Expression, X),
-                    ir_cjump(X, [L2, L3]), 
+                    ir_cjump(X, L2, L3), 
                     put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
 ir_s_statement(if(Expression, Statement1, nil)) :-
                     get_labels(2, [L1, L2]), ir_expr(Expression, X),
-                    ir_cjump(X, [L1, L2]),
+                    ir_cjump(X, L1, L2),
                     put_label(L1), ir_statement(Statement1), put_label(L2).
 
 ir_s_statement(if(Expression, Statement1, Statement2)) :- 
                     get_labels(3, [L1, L2, L3]), ir_expr(Expression, X),
-                    ir_cjump(X, [L1, L2]),
+                    ir_cjump(X, L1, L2),
                     put_label(L1), ir_statement(Statement1),
                     ir_jump(L3), put_label(L2),
                     ir_statement(Statement2), put_label(L3).
 
 ir_s_statement(print(Expression:Type)) :- 
                     ir_expr(Expression:Type, X), 
-                    ir_print(Type, [(Type, X)]). 
+                    ir_print(Type, X). 
 
 ir_s_statement(read(id(Id, Kind, Type))) :- ir_read(Type, X), ir_store(Id, Type, Kind, X).
 
@@ -468,9 +468,10 @@ ir_ast_process(fun(Identifier, _, Body)) :-
                     reset_fp, reset_t.
 
 ir_ast_list_process([]).
-ir_ast_list_process([AST|ASTs]) :- ir_ast_process(AST), !, ir_ast_list_process(ASTs).
+ir_ast_list_process([AST|ASTs]) :- ir_ast_process(AST), nl, !, ir_ast_list_process(ASTs).
 
-loop(In, end_of_file) :- close(In), reset_t, reset_fp, reset_l.
-loop(In, AST_List) :- ir_ast_process(AST_List), readfile(In, AST_List2), loop(In, AST_List2).
+read_terms(_, end_of_file, []).
+read_terms(In, X, [X|Y]) :- read(In, Z), read_terms(In, Z, Y).
+read_terms(In, Y) :- read(In, X), read_terms(In, X, Y).
 
-start(Name) :- reset_t, reset_fp, reset_l, open(Name, read, In), readfile(In, AST_List), loop(In, AST_List), !.
+start(Name) :- reset_t, reset_fp, reset_l, open(Name, read, In), read_terms(In, X), close(In), ir_ast_list_process(X), !.
