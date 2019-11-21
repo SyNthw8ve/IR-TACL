@@ -1,0 +1,89 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+
+\title{Relatório de Tópicos Avançados de Compilação - IR}
+\author{Nuno Carriço nº 44612}
+\date{November 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{Estrutura}
+
+\subsection{Funcionamento Geral}
+
+Começa-se por ler os termos para uma lista, lista essa que será percorrida e cada um dos seus elementos processado.
+No final do processamento de cada termo, os contadores de temporários são reiniciados. Podem distinguir-se
+dois tipos de declarações globais:
+
+\begin{itemize}
+    \item Declarações de variáveis globais;
+    \item Declarações de procedimentos/funções;
+\end{itemize}
+
+No caso das variáveis globais nada há a fazer. Todavia, no que toca às funções 
+ (utilizando funções tanto para procedimentos como para funções) têm-se dois casos:
+    \begin{itemize}
+        \item Funções da forma: fun type ID (formal-arguments) = expression; \\
+        Como não têm declarações nem corpo, apenas se trata a expressão de retorno.
+        \item Nos restantes casos são tratadas as declarações locais com inicialização, depois 
+        o corpo da função e por fim a expressão de retorno.
+    \end{itemize}
+
+\subsection{Expressões}
+
+Nas expressões, em termos do seu tratamento, podemos distinguit três grupos:
+    \begin{itemize}
+        \item Expressões de chamadas de funções (call);
+        \item Expressões lógicas or (||) e and (\&\&);
+        \item Restantes Expressões
+    \end{itemize}
+
+Começando pelo último ponto, nestas expressões, em geral, afeta-se sempre
+ um temporário novo, obtido através do respectivo predicado, (incrementando o contador de temporários) e são passados
+  os temporários para efetuar a instrução. O predicado responsável comunica ao nó pai qual o registo em que ficou o resultado.
+
+\par Para chamadas de funções, são geradas as expressões para cada um dos 
+argumentos, em que os registos com os resultados são guardados numa lista, que é comunicada 
+ao nó pai.
+
+\par No que respeita a expressões de or e and, são construídas de modo a que sejam 
+short-cicuited, ou seja:
+\begin{itemize}
+    \item No or, se a primeira expressão for verdade, não é analisada a segunda;
+    \item No and, se a primeira expressão for falsa, não é analisada a segunda;
+\end{itemize}
+Mais uma vez, é comunicado ao nó pai qual o temporário com o resultado.
+
+\subsection{Instruções}
+
+Na instrução de if, distingui-se a instrução de if com else e if sem else.\par 
+Tanto na instrução if como na instrução while, é primeiro gerada a representação intermédia da expressão
+ da condição e depois comunicado o registo que contém o valor dessa expressão. Como é feito uso das pseudo-instruções de comparação,
+ não se procede a troca de labels no caso da negação, evitando criar predicados extra para as instruções de comparação.
+
+\section{Notas}
+    \begin{itemize}
+        \item Foram usadas as pseudo instruções de comparação.
+        \item São usados predicados dinâmicos para obter os próximos temporários e as próximas labels a usar.
+        \item Cada chamada de função tem a sua própria lista onde são guardados os temporários que contêm o resultado da expressão de cada um dos
+         seus argumentos. Cada temporário dessa lista, para além do seu número, tem o seu tipo, por forma a saber se é um temporário inteiro ou real.
+        \item Em expressões que produzem resultados, o temporário com o resultado é comunicado ao nó pai.
+    \end{itemize}
+
+\section{Ferramentas Utilizadas}
+
+Para o desenvolvimento foi utlizado Prolog, em específico,
+SWI-Prolog versão 8.0.3.
+
+\section{Execução}
+
+Para executar, basta chamar o predicado start com o nome do ficheiro.
+
+\begin{verbatim}
+    start("nome_ficheiro").
+\end{verbatim}
+
+\end{document}

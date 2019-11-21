@@ -2,8 +2,6 @@
 :- dynamic fp/1.
 :- dynamic l/1.
 
-%TODO: Remove unecessary things
-
 t(0).
 fp(0).
 l(0).
