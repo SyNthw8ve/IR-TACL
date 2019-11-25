@@ -397,65 +397,25 @@ ir_read(real, X) :-
 
 %statements 
 
-ir_cond(true : bool, LT, LF) :- get_labels(2, [LT, LF]), ir_jump(LT).
-ir_cond(false : bool, LT, LF) :- get_labels(2, [LT, LF]), ir_jump(LF).
-
-ir_cond(or(Expression1, Expression2) : bool, LT, LF) :- 
-                    get_labels(1, [LTemp]), ir_expr(Expression1, X),
-                    ir_cjump(X, LT, LTemp), put_label(LTemp),
-                    ir_expr(Expression2, Y), ir_cjump(Y, LT, LF).
-
-ir_cond(and(Expression1, Expression2) : bool, LT, LF) :- 
-                    get_labels(1, [LTemp]), ir_expr(Expression1, X),
-                    ir_cjump(X, LTemp, LF), put_label(LTemp),
-                    ir_expr(Expression2, Y), ir_cjump(Y, LT, LF).
-
-ir_cond(eq(Expression1, Expression2) : bool, LT, LF) :- 
-                    ir_expr(eq(Expression1, Expression2) : bool, X), ir_cjump(X, LT, LF).
-
-ir_cond(ne(Expression1, Expression2) : bool, LT, LF) :- 
-                    ir_expr(eq(Expression1, Expression2) : bool, X), ir_cjump(X, LF, LT).
-
-ir_cond(lt(Expression1, Expression2) : bool, LT, LF) :- 
-                    ir_expr(lt(Expression1, Expression2) : bool, X), ir_cjump(X, LT, LF).
-
-ir_cond(le(Expression1, Expression2) : bool, LT, LF) :- 
-                    ir_expr(gt(Expression1, Expression2) : bool, X), ir_cjump(X, LF, LT).
-
-ir_cond(gt(Expression1, Expression2) : bool, LT, LF) :-  
-                    ir_expr(gt(Expression1, Expression2) : bool, X), ir_cjump(X, LT, LF).
-
-ir_cond(ge(Expression1, Expression2) : bool, LT, LF) :- 
-                    ir_expr(lt(Expression1, Expression2) : bool, X), ir_cjump(X, LF, LT).
-
-ir_cond(not(Expression) : bool, LT, LF) :- 
-                    ir_expr(Expression, X), ir_cjump(X, LF, LT).
-
-ir_cond(Expression, LT, LF) :- 
-                    ir_expr(Expression, X),
-                    ir_cjump(X, LT, LF).
-
 ir_s_statement(assign(id(Id, Kind, Type), Expression)) :- 
                     ir_expr(Expression, X), ir_store(Id, Type, Kind, X).
 
 ir_s_statement(while(Expression, Statement)) :- 
-                    get_labels(3, [LS, LT, LF]), put_label(LS),
-                    ir_cond(Expression, LT, LF), put_label(LT),
-                    ir_statement(Statement), ir_jump(LS),
-                    put_label(LF).
+                    get_labels(3, [L1, L2, L3]),  put_label(L1), ir_expr(Expression, X),
+                    ir_cjump(X, L2, L3), 
+                    put_label(L2), ir_statement(Statement), ir_jump(L1), put_label(L3).
 
 ir_s_statement(if(Expression, Statement1, nil)) :-
-                    get_labels(2, [LT, LF]),
-                    ir_cond(Expression, LT, LF), put_label(LT),
-                    ir_statement(Statement1), put_label(LF).
+                    get_labels(2, [L1, L2]), ir_expr(Expression, X),
+                    ir_cjump(X, L1, L2),
+                    put_label(L1), ir_statement(Statement1), put_label(L2).
 
-ir_s_statement(if(Expression, Statement1, Statement2)) :-
-                    get_labels(3, [LT, LF, LO]),
-                    ir_cond(Expression, LT, LF), put_label(LT),
-                    ir_statement(Statement1),
-                    ir_jump(LO), put_label(LF), ir_statement(Statement2),
-                    put_label(LO).
-
+ir_s_statement(if(Expression, Statement1, Statement2)) :- 
+                    get_labels(3, [L1, L2, L3]), ir_expr(Expression, X),
+                    ir_cjump(X, L1, L2),
+                    put_label(L1), ir_statement(Statement1),
+                    ir_jump(L3), put_label(L2),
+                    ir_statement(Statement2), put_label(L3).
 
 ir_s_statement(print(Expression:Type)) :- 
                     ir_expr(Expression:Type, X), 

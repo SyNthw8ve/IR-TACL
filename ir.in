@@ -1,9 +1,4 @@
-fun(hi, [arg(n, int)],
-  body([
-      local(r, bool, true: bool)
-    ], 
-    if(
-      or(lt(id(n,arg,int): int, int_literal(0): int): bool, gt(id(n,arg,int): int, int_literal(0): int): bool): bool, 
-      assign(id(r,local,bool), false: bool), 
-      nil),
-    id(r,local,bool): bool)).
+fun(twice, [arg(n, int)],
+body([],
+nil,
+times(int_literal(2): int, id(n,arg,int): int): int)).

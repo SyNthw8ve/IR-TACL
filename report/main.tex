@@ -86,4 +86,18 @@ Para executar, basta chamar o predicado start com o nome do ficheiro.
     start("nome_ficheiro").
 \end{verbatim}
 
+Para usar o stdin, em alternativa ao ficheiro, basta chamar o predicado start e depois de inseridos os termos, acrescentar end\_of\_file. .
+\\ Exemplo:
+
+\begin{verbatim}
+
+    ?- start().
+    |: fun(twice, [arg(n, int)],
+    |:   body([], 
+    |:     nil,
+    |:     times(int_literal(2): int, id(n,arg,int): int): int)).
+    |: end_of_file.
+
+\end{verbatim}
+
 \end{document}
